@@ -1,0 +1,40 @@
+{
+  "guides": [
+    {
+      "id": "style_48ebc16315e6",
+      "name": "Aerospace Terminal HUD",
+      "tokens": {
+        "colors": {
+          "void": "#000000",
+          "optical": "#050505",
+          "phosphor": "#E0E0E0",
+          "target": "#FF003C",
+          "radar": "#FFB000",
+          "sensor": "#00E5FF"
+        },
+        "typography": {
+          "heading": {
+            "family": "Michroma",
+            "size": "tracking-widest uppercase",
+            "url": "https://fonts.googleapis.com/css2?family=Michroma&display=swap"
+          },
+          "body": {
+            "family": "Share Tech Mono",
+            "size": "text-sm",
+            "url": "https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+          }
+        },
+        "spacing": {
+          "section": "py-20",
+          "gutter": "px-4 sm:px-6 lg:px-8"
+        },
+        "radius": {
+          "none": "0px"
+        }
+      },
+      "designInstructions": "# Aerospace Terminal Design Language\n\nThe design is inspired by tactical aerospace HUDs and industrial terminal interfaces, characterized by high-contrast dark surfaces and technical line work.\n\n### 1. Layout & Composition\n- **Atmospheric Void**: Use `void` (#000000) as the primary background. Containers and cards use `optical` (#050505) with razor-sharp borders.\n- **HUD Overlays**: A global CRT scanline effect (subtle linear gradient overlay) should be applied to the viewport to reinforce the hardware-terminal feel.\n- **Symmetry & Grids**: Elements are aligned to a strict 12-column grid with generous internal padding, emphasizing structured data over organic shapes.\n\n### 2. Border & Shape Eccentricities\n- **Target Boxes**: Every major container uses a \"target-box\" style: transparent background with 2px thick L-shaped corner accents in `sensor` (#00E5FF). \n- **Hover Transitions**: On interaction, these corner accents expand and shift to `target` (#FF003C), accompanied by a subtle inner glow.\n- **Button HUDs**: Buttons are rectangular with 1px industrial borders, using monospaced uppercase labels.\n\n### 3. Decorative Motifs\n- **Crosshair Cursor**: The entire interface uses a `crosshair` cursor, enhancing the tactical/precision theme.\n- **Numbering**: Section headers are prefixed with technical indices (e.g., `01.`, `02.`) in `target` red.\n- **Rule Lines**: Use 1px thin horizontal rules (`h-px`) in muted tones for structural separation.\n\n### 4. Typography\n- **Headings**: `Michroma` in `sensor` cyan, always uppercase with wide tracking for a futuristic command-center aesthetic.\n- **Data/Body**: `Share Tech Mono` for all body copy and UI labels, maintaining the feeling of a real-time data readout.\n\n### 5. Interaction Feel\n- **Animation**: Entrance animations are snappy and linear. Elements should slide up or fade in with a technical \"boot sequence\" feel.\n- **Interactive States**: Hovering over interactive cards (`target-box`) triggers a slight scale increase (1.02x) and a shift from cool `sensor` cyan to aggressive `target` red accents.",
+      "created": "2026-06-13T16:02:15.380194+00:00",
+      "modified": "2026-06-13T16:02:15.380194+00:00"
+    }
+  ]
+}

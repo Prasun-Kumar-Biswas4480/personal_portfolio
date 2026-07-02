@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Share+Tech+Mono&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-phosphor bg-void min-h-screen cursor-crosshair;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading uppercase tracking-widest text-sensor;
+  }
+  
+  a, button {
+    @apply cursor-crosshair;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 50;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0) 2px,
+      rgba(0, 0, 0, 0.2) 2px,
+      rgba(0, 0, 0, 0.2) 4px
+    );
+    opacity: 0.15;
+    mix-blend-mode: overlay;
+  }
+
+  .target-box {
+    @apply relative bg-transparent transition-all duration-300;
+    background: 
+      linear-gradient(to right, theme('colors.sensor') 2px, transparent 2px) 0 0,
+      linear-gradient(to bottom, theme('colors.sensor') 2px, transparent 2px) 0 0,
+      linear-gradient(to left, theme('colors.sensor') 2px, transparent 2px) 100% 0,
+      linear-gradient(to bottom, theme('colors.sensor') 2px, transparent 2px) 100% 0,
+      linear-gradient(to right, theme('colors.sensor') 2px, transparent 2px) 0 100%,
+      linear-gradient(to top, theme('colors.sensor') 2px, transparent 2px) 0 100%,
+      linear-gradient(to left, theme('colors.sensor') 2px, transparent 2px) 100% 100%,
+      linear-gradient(to top, theme('colors.sensor') 2px, transparent 2px) 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+  }
+  
+  .target-box:hover {
+    @apply scale-[1.02] bg-optical z-10 shadow-[inset_0_0_20px_rgba(255,0,60,0.05)];
+    background: 
+      linear-gradient(to right, theme('colors.target') 2px, transparent 2px) 0 0,
+      linear-gradient(to bottom, theme('colors.target') 2px, transparent 2px) 0 0,
+      linear-gradient(to left, theme('colors.target') 2px, transparent 2px) 100% 0,
+      linear-gradient(to bottom, theme('colors.target') 2px, transparent 2px) 100% 0,
+      linear-gradient(to right, theme('colors.target') 2px, transparent 2px) 0 100%,
+      linear-gradient(to top, theme('colors.target') 2px, transparent 2px) 0 100%,
+      linear-gradient(to left, theme('colors.target') 2px, transparent 2px) 100% 100%,
+      linear-gradient(to top, theme('colors.target') 2px, transparent 2px) 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 24px 24px;
+  }
+
+  .btn-hud {
+    @apply inline-flex items-center justify-center px-6 py-2 border border-sensor text-sensor bg-transparent hover:bg-target/10 hover:border-target hover:text-target transition-all duration-300 font-sans uppercase tracking-widest text-sm;
+  }
+
+  /* Liquid Glass Effect */
+  .liquid-glass {
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    background-color: rgba(2, 6, 23, 0.3);
+    box-shadow: 
+      inset 0 1px 1px rgba(255, 255, 255, 0.15),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.8),
+      0 10px 30px 0 rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 229, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-glass::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    z-index: 20;
+    pointer-events: none;
+    transition: left 0.7s ease-in-out;
+  }
+
+  .target-box:hover.liquid-glass::after {
+    left: 200%;
+  }
+
+  /* Animated Fluid Orbs */
+  .orb {
+    @apply absolute rounded-full blur-[100px] opacity-20 -z-10 pointer-events-none;
+    animation: float 25s infinite alternate ease-in-out;
+  }
+
+  @keyframes float {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50% { transform: translate(50px, -30px) scale(1.1) rotate(10deg); }
+    100% { transform: translate(100px, 100px) scale(1.2) rotate(-10deg); }
+  }
+
+  .orb-1 { width: 600px; height: 600px; background: #1a00ff; top: -10%; left: -10%; }
+  .orb-2 { width: 500px; height: 500px; background: #2a00ff; bottom: 20%; right: -5%; animation-delay: -7s; }
+  .orb-3 { width: 400px; height: 400px; background: #6600ff; top: 40%; left: 30%; animation-delay: -15s; }
+}
