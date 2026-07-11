@@ -1,5 +1,5 @@
 import { Suspense, useRef, useMemo, useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
@@ -45,14 +45,11 @@ const sectionConfigs = {
 
 const DroneModel = () => {
   const groupRef = useRef();
-  const { camera } = useThree();
   const { activeSection, sectionProgress, scrollProgress } = useScroll();
   const [modelError, setModelError] = useState(null);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [scene, setScene] = useState(null);
-  const [meshes, setMeshes] = useState([]);
-  const currentConfig = useRef(JSON.parse(JSON.stringify(sectionConfigs.hero)));
-  const [targetConfig, setTargetConfig] = useState(sectionConfigs.hero);
+  const targetConfig = sectionConfigs[activeSection] || sectionConfigs.hero;
 
   useEffect(() => {
     const loader = new GLTFLoader();
@@ -73,128 +70,108 @@ const DroneModel = () => {
     );
   }, []);
 
-  useEffect(() => {
-    if (scene) {
-      const meshList = [];
-      scene.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = false;
-          child.receiveShadow = false;
-          child.frustumCulled = false;
-          meshList.push(child);
+  const meshes = useMemo(() => {
+    if (!scene) return [];
+    const meshList = [];
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = false;
+        child.receiveShadow = false;
+        child.frustumCulled = false;
+        meshList.push(child);
 
-          if (child.material) {
-            const mats = Array.isArray(child.material) ? child.material : [child.material];
-            mats.forEach((mat, matIdx) => {
-              mat.transparent = false;
-              mat.opacity = 1;
-              mat.depthWrite = true;
-              mat.side = 2;
-              mat.frustumCulled = false;
+        if (child.material) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material];
+          mats.forEach((mat) => {
+            mat.transparent = false;
+            mat.opacity = 1;
+            mat.depthWrite = true;
+            mat.side = 2;
+            mat.frustumCulled = false;
 
-              const name = (child.name || '').toLowerCase();
-              const isMain = name.includes('body') || name.includes('fuselage') || name.includes('main') || name.includes('frame') || name.includes('chassis');
-              const isAccent = name.includes('prop') || name.includes('motor') || name.includes('rotor') || name.includes('blade') || name.includes('rotor');
-              const isGlow = name.includes('light') || name.includes('led') || name.includes('glow') || name.includes('eye') || name.includes('camera');
-              const isArm = name.includes('arm') || name.includes('boom') || name.includes('strut');
+            const name = (child.name || '').toLowerCase();
+            const isMain = name.includes('body') || name.includes('fuselage') || name.includes('main') || name.includes('frame') || name.includes('chassis');
+            const isAccent = name.includes('prop') || name.includes('motor') || name.includes('rotor') || name.includes('blade') || name.includes('rotor');
+            const isGlow = name.includes('light') || name.includes('led') || name.includes('glow') || name.includes('eye') || name.includes('camera');
+            const isArm = name.includes('arm') || name.includes('boom') || name.includes('strut');
 
-              // High-Visibility Solid Bright Colors
-              let color, metalness, roughness, emissive, emissiveIntensity, clearcoat, clearcoatRoughness;
+            // High-Visibility Solid Bright Colors
+            let color, metalness, roughness, emissive, emissiveIntensity, clearcoat, clearcoatRoughness;
 
-              if (isGlow) {
-                // Navigation lights - bright cyan glow
-                color = new THREE.Color('#ffffff');
-                emissive = new THREE.Color('#00E5FF');
-                emissiveIntensity = 3.0;
-                metalness = 0.1;
-                roughness = 0.1;
-                clearcoat = 1.0;
-                clearcoatRoughness = 0.1;
-              } else if (isAccent) {
-                // Props/motors - solid bright orange
-                color = new THREE.Color('#FF4500');
-                emissive = new THREE.Color('#FF2200');
-                emissiveIntensity = 0.1;
-                metalness = 0.3;
-                roughness = 0.4;
-                clearcoat = 0.8;
-                clearcoatRoughness = 0.15;
-              } else if (isArm) {
-                // Arms/booms - solid dark carbon/grey for contrast
-                color = new THREE.Color('#222222');
-                emissive = new THREE.Color('#000000');
-                emissiveIntensity = 0.0;
-                metalness = 0.5;
-                roughness = 0.6;
-                clearcoat = 0.2;
-                clearcoatRoughness = 0.4;
-              } else if (isMain) {
-                // Main body - solid glossy white
-                color = new THREE.Color('#ffffff');
-                emissive = new THREE.Color('#000000');
-                emissiveIntensity = 0.0;
-                metalness = 0.1;
-                roughness = 0.2;
-                clearcoat = 1.0;
-                clearcoatRoughness = 0.05;
-              } else {
-                // Everything else - solid bright light grey
-                color = new THREE.Color('#dddddd');
-                emissive = new THREE.Color('#000000');
-                emissiveIntensity = 0.0;
-                metalness = 0.2;
-                roughness = 0.3;
-                clearcoat = 0.5;
-                clearcoatRoughness = 0.2;
-              }
+            if (isGlow) {
+              color = new THREE.Color('#ffffff');
+              emissive = new THREE.Color('#00E5FF');
+              emissiveIntensity = 3.0;
+              metalness = 0.1;
+              roughness = 0.1;
+              clearcoat = 1.0;
+              clearcoatRoughness = 0.1;
+            } else if (isAccent) {
+              color = new THREE.Color('#FF4500');
+              emissive = new THREE.Color('#FF2200');
+              emissiveIntensity = 0.1;
+              metalness = 0.3;
+              roughness = 0.4;
+              clearcoat = 0.8;
+              clearcoatRoughness = 0.15;
+            } else if (isArm) {
+              color = new THREE.Color('#222222');
+              emissive = new THREE.Color('#000000');
+              emissiveIntensity = 0.0;
+              metalness = 0.5;
+              roughness = 0.6;
+              clearcoat = 0.2;
+              clearcoatRoughness = 0.4;
+            } else if (isMain) {
+              color = new THREE.Color('#ffffff');
+              emissive = new THREE.Color('#000000');
+              emissiveIntensity = 0.0;
+              metalness = 0.1;
+              roughness = 0.2;
+              clearcoat = 1.0;
+              clearcoatRoughness = 0.05;
+            } else {
+              color = new THREE.Color('#dddddd');
+              emissive = new THREE.Color('#000000');
+              emissiveIntensity = 0.0;
+              metalness = 0.2;
+              roughness = 0.3;
+              clearcoat = 0.5;
+              clearcoatRoughness = 0.2;
+            }
 
-              mat.color = color;
-              mat.emissive = emissive;
-              mat.emissiveIntensity = emissiveIntensity;
-              mat.metalness = metalness;
-              mat.roughness = roughness;
-              mat.clearcoat = clearcoat;
-              mat.clearcoatRoughness = clearcoatRoughness;
-            });
-          }
-          if (child.geometry) {
-            child.geometry.computeBoundingSphere();
-            child.geometry.computeBoundingBox();
-
-            // Add Edge Highlighting - Optimized (40 degree threshold to reduce line count)
-            const oldEdges = child.children.find(c => c.isLineSegments);
-            if (oldEdges) child.remove(oldEdges);
-
-            const edgesGeometry = new THREE.EdgesGeometry(child.geometry, 40);
-            const edgesMaterial = new THREE.LineBasicMaterial({
-              color: new THREE.Color('#00E5FF'),
-              transparent: true,
-              opacity: 0.6,
-            });
-            const edgeLines = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-            child.add(edgeLines);
-          }
+            mat.color = color;
+            mat.emissive = emissive;
+            mat.emissiveIntensity = emissiveIntensity;
+            mat.metalness = metalness;
+            mat.roughness = roughness;
+            mat.clearcoat = clearcoat;
+            mat.clearcoatRoughness = clearcoatRoughness;
+          });
         }
-      });
-      setMeshes(meshList);
-    }
+        if (child.geometry) {
+          child.geometry.computeBoundingSphere();
+          child.geometry.computeBoundingBox();
+
+          // Add Edge Highlighting - Optimized (40 degree threshold to reduce line count)
+          const oldEdges = child.children.find(c => c.isLineSegments);
+          if (oldEdges) child.remove(oldEdges);
+
+          const edgesGeometry = new THREE.EdgesGeometry(child.geometry, 40);
+          const edgesMaterial = new THREE.LineBasicMaterial({
+            color: new THREE.Color('#00E5FF'),
+            transparent: true,
+            opacity: 0.6,
+          });
+          const edgeLines = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+          child.add(edgeLines);
+        }
+      }
+    });
+    return meshList;
   }, [scene]);
 
-  useEffect(() => {
-    const config = sectionConfigs[activeSection] || sectionConfigs.hero;
-    setTargetConfig(config);
-  }, [activeSection]);
-
-  useFrame((state, delta) => {
-    const curr = currentConfig.current;
-    const targ = targetConfig;
-
-    // Asymptotic smoothing for buttery soft transitions
-    // Lower lerpSpeed = smoother and slower transition
-    const lerpSpeed = delta * 2.0;
-
-    // Removed section-based camera animation so the camera stays completely static
-
+  useFrame(() => {
     if (groupRef.current) {
       // Calculate flight path based on scrollProgress
       const startPos = new THREE.Vector3(-1.5, 1.5, 0); 
@@ -279,7 +256,7 @@ const DronePlaceholder = () => {
   const groupRef = useRef();
   const { scrollProgress } = useScroll();
 
-  useFrame((state, delta) => {
+  useFrame(() => {
     if (groupRef.current) {
       const startPos = new THREE.Vector3(-1.5, 1.5, 0);
       const midPos = new THREE.Vector3(0, 0, 0);
@@ -400,49 +377,49 @@ const createCircleTexture = () => {
   return new THREE.CanvasTexture(canvas);
 };
 
+const generateStarfield = () => {
+  const count = 12000;
+  const arr = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    const radius = 60 + Math.random() * 250;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+
+    arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    arr[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    arr[i * 3 + 2] = radius * Math.cos(phi);
+
+    const colorType = Math.random();
+    if (colorType < 0.70) {
+      colors[i * 3] = 0.9;
+      colors[i * 3 + 1] = 0.95;
+      colors[i * 3 + 2] = 1.0;
+    } else if (colorType < 0.90) {
+      colors[i * 3] = 0.5;
+      colors[i * 3 + 1] = 0.7;
+      colors[i * 3 + 2] = 1.0;
+    } else {
+      colors[i * 3] = 0.6;
+      colors[i * 3 + 1] = 0.2;
+      colors[i * 3 + 2] = 0.8;
+    }
+
+    sizes[i] = Math.random() > 0.95 ? Math.random() * 3 + 1 : Math.random() * 1 + 0.2;
+  }
+  return { positions: arr, colors, sizes };
+};
+
+const INITIAL_STARFIELD = generateStarfield();
+
 const Starfield = () => {
   const starsRef = useRef();
   const texture = useMemo(() => createCircleTexture(), []);
-  const positions = useMemo(() => {
-    const count = 12000;
-    const arr = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
+  const positions = INITIAL_STARFIELD;
 
-    for (let i = 0; i < count; i++) {
-      const radius = 60 + Math.random() * 250;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-
-      arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      arr[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      arr[i * 3 + 2] = radius * Math.cos(phi);
-
-      const colorType = Math.random();
-      if (colorType < 0.70) {
-        // Bright white/blue main sequence
-        colors[i * 3] = 0.9;
-        colors[i * 3 + 1] = 0.95;
-        colors[i * 3 + 2] = 1.0;
-      } else if (colorType < 0.90) {
-        // Cool blue dwarfs
-        colors[i * 3] = 0.5;
-        colors[i * 3 + 1] = 0.7;
-        colors[i * 3 + 2] = 1.0;
-      } else {
-        // Deep purple/magenta cosmic stars
-        colors[i * 3] = 0.6;
-        colors[i * 3 + 1] = 0.2;
-        colors[i * 3 + 2] = 0.8;
-      }
-
-      // Some stars are tiny and dim, a few are larger and bright
-      sizes[i] = Math.random() > 0.95 ? Math.random() * 3 + 1 : Math.random() * 1 + 0.2;
-    }
-    return { positions: arr, colors, sizes };
-  }, []);
-
-  useFrame((state) => {
+  useFrame(() => {
     if (starsRef.current) {
       starsRef.current.rotation.y += 0.00002;
       starsRef.current.rotation.x += 0.00001;
@@ -469,54 +446,52 @@ const Starfield = () => {
   );
 };
 
+const generateNebula = () => {
+  const count = 3000;
+  const arr = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    const radius = 20 + Math.random() * 60;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.PI / 2 + (Math.random() - 0.5) * 1.5;
+
+    arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    arr[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    arr[i * 3 + 2] = radius * Math.cos(phi);
+
+    const colorType = Math.random();
+    if (colorType < 0.4) {
+      colors[i * 3] = 0.2;
+      colors[i * 3 + 1] = 0.3;
+      colors[i * 3 + 2] = 0.8;
+    } else if (colorType < 0.7) {
+      colors[i * 3] = 0.6;
+      colors[i * 3 + 1] = 0.1;
+      colors[i * 3 + 2] = 0.5;
+    } else {
+      colors[i * 3] = 0.1;
+      colors[i * 3 + 1] = 0.7;
+      colors[i * 3 + 2] = 0.8;
+    }
+
+    sizes[i] = Math.random() * 15 + 5;
+  }
+  return { positions: arr, colors, sizes };
+};
+
+const INITIAL_NEBULA = generateNebula();
+
 const Nebula = () => {
   const nebulaRef = useRef();
   const texture = useMemo(() => createCircleTexture(), []);
-  const positions = useMemo(() => {
-    const count = 3000;
-    const arr = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
+  const positions = INITIAL_NEBULA;
 
-    for (let i = 0; i < count; i++) {
-      const radius = 20 + Math.random() * 60;
-      // Cluster the nebula mainly along an equatorial band to simulate a galactic arm
-      const theta = Math.random() * Math.PI * 2;
-      // Focus more towards the equator (phi near PI/2)
-      const phi = Math.PI / 2 + (Math.random() - 0.5) * 1.5;
-
-      arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      arr[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      arr[i * 3 + 2] = radius * Math.cos(phi);
-
-      const colorType = Math.random();
-      if (colorType < 0.4) {
-        // Deep space blue/purple
-        colors[i * 3] = 0.2;
-        colors[i * 3 + 1] = 0.3;
-        colors[i * 3 + 2] = 0.8;
-      } else if (colorType < 0.7) {
-        // Cosmic magenta
-        colors[i * 3] = 0.6;
-        colors[i * 3 + 1] = 0.1;
-        colors[i * 3 + 2] = 0.5;
-      } else {
-        // Cyan highlights
-        colors[i * 3] = 0.1;
-        colors[i * 3 + 1] = 0.7;
-        colors[i * 3 + 2] = 0.8;
-      }
-
-      sizes[i] = Math.random() * 15 + 5;
-    }
-    return { positions: arr, colors, sizes };
-  }, []);
-
-  useFrame((state) => {
+  useFrame(() => {
     if (nebulaRef.current) {
       nebulaRef.current.rotation.y += 0.0001;
       nebulaRef.current.rotation.z += 0.00005;
-      // Removed CPU-intensive per-particle animation here to fix lag
     }
   });
 
@@ -542,24 +517,28 @@ const Nebula = () => {
   );
 };
 
+const generateAmbientParticles = () => {
+  const arr = new Float32Array(200 * 3);
+  for (let i = 0; i < 200; i++) {
+    const radius = 5 + Math.random() * 15;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+
+    arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    arr[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    arr[i * 3 + 2] = radius * Math.cos(phi);
+  }
+  return arr;
+};
+
+const INITIAL_AMBIENT_PARTICLES = generateAmbientParticles();
+
 const AmbientParticles = () => {
   const pointsRef = useRef();
   const texture = useMemo(() => createCircleTexture(), []);
-  const positions = useMemo(() => {
-    const arr = new Float32Array(200 * 3);
-    for (let i = 0; i < 200; i++) {
-      const radius = 5 + Math.random() * 15;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
+  const positions = INITIAL_AMBIENT_PARTICLES;
 
-      arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      arr[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      arr[i * 3 + 2] = radius * Math.cos(phi);
-    }
-    return arr;
-  }, []);
-
-  useFrame((state) => {
+  useFrame(() => {
     if (pointsRef.current) {
       pointsRef.current.rotation.y += 0.0002;
       pointsRef.current.rotation.x += 0.0001;
@@ -585,41 +564,42 @@ const AmbientParticles = () => {
   );
 };
 
+const generateAsteroids = (count) => {
+  const temp = [];
+  for (let i = 0; i < count; i++) {
+    // Scattered throughout the entire screen volume
+    const radius = 8 + Math.random() * 40; 
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    
+    const x = radius * Math.sin(phi) * Math.cos(theta);
+    const y = radius * Math.sin(phi) * Math.sin(theta);
+    const z = radius * Math.cos(phi);
+    
+    temp.push({
+      position: new THREE.Vector3(x, y, z),
+      rotation: new THREE.Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI),
+      scale: new THREE.Vector3(
+        Math.random() * 0.5 + 0.15,
+        Math.random() * 0.5 + 0.15,
+        Math.random() * 0.5 + 0.15
+      ),
+      speedRotation: new THREE.Euler(
+        (Math.random() - 0.5) * 0.01,
+        (Math.random() - 0.5) * 0.01,
+        (Math.random() - 0.5) * 0.01
+      )
+    });
+  }
+  return temp;
+};
+
+const INITIAL_ASTEROIDS = generateAsteroids(300);
+
 const Asteroids = () => {
   const meshRef = useRef();
-  const asteroidCount = 300; // Increased count for denser asteroid field
-  
   const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  const asteroids = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < asteroidCount; i++) {
-      // Scattered throughout the entire screen volume
-      const radius = 8 + Math.random() * 40; 
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      
-      const x = radius * Math.sin(phi) * Math.cos(theta);
-      const y = radius * Math.sin(phi) * Math.sin(theta);
-      const z = radius * Math.cos(phi);
-      
-      temp.push({
-        position: new THREE.Vector3(x, y, z),
-        rotation: new THREE.Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI),
-        scale: new THREE.Vector3(
-          Math.random() * 0.5 + 0.15,
-          Math.random() * 0.5 + 0.15,
-          Math.random() * 0.5 + 0.15
-        ),
-        speedRotation: new THREE.Euler(
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01
-        )
-      });
-    }
-    return temp;
-  }, [asteroidCount]);
+  const asteroids = INITIAL_ASTEROIDS;
 
   useEffect(() => {
     if (meshRef.current) {
@@ -642,7 +622,7 @@ const Asteroids = () => {
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[null, null, asteroidCount]}>
+    <instancedMesh ref={meshRef} args={[null, null, INITIAL_ASTEROIDS.length]}>
       <dodecahedronGeometry args={[1, 0]} />
       <meshStandardMaterial 
         color="#888888" 

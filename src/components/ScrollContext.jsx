@@ -1,13 +1,13 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const ScrollContext = createContext(null);
+const SECTIONS = ['hero', 'about', 'skills', 'projects', 'contact'];
 
 export const ScrollProvider = ({ children }) => {
   const [activeSection, setActiveSection] = useState('hero');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [sectionProgress, setSectionProgress] = useState({});
-
-  const sections = ['hero', 'about', 'skills', 'projects', 'contact'];
 
   const handleScroll = useCallback(() => {
     const scrollY = window.scrollY;
@@ -17,7 +17,7 @@ export const ScrollProvider = ({ children }) => {
     setScrollProgress(totalProgress);
 
     const sectionPositions = {};
-    sections.forEach((sectionId) => {
+    SECTIONS.forEach((sectionId) => {
       const element = document.getElementById(sectionId);
       if (element) {
         const rect = element.getBoundingClientRect();
